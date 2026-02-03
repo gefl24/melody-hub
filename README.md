@@ -1,48 +1,24 @@
-# 🎵 MelodyHub
+# MelodyHub
 
 基于 lx-music-desktop 核心逻辑的 Web 版本音乐服务，支持多平台音乐搜索、下载和管理，提供 Docker 一键部署方案。
 
 ## ✨ 特性
 
-- 🎵 **多音源支持**: 完全兼容 lx-music-desktop 的自定义源，支持网易云、QQ音乐、酷我、酷狗等多个平台
-- 🌐 **Web 访问**: 无需安装客户端，浏览器即可使用，支持多设备访问
-- 📥 **服务器端下载**: 支持断点续传、队列管理、多任务并行下载
-- 🔄 **实时推送**: WebSocket 实时推送下载进度和状态
-- 🛡️ **防盗链代理**: 自动处理音乐平台的防盗链，确保音乐可以正常播放
-- 💾 **数据持久化**: SQLite 数据库存储，确保数据安全
-- 🐳 **容器化部署**: Docker 一键部署，简化安装和维护
-- 🎨 **现代化 UI**: Vue 3 + Element Plus 构建，美观易用
-- 🎯 **歌曲管理**: 内置歌曲管理器，支持元数据编辑、批量操作
-- 🔍 **智能搜索**: 多平台聚合搜索，快速找到你想要的音乐
-
-## 📸 预览
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  🎵 MelodyHub                                          │
-│  ├─ 🔍 搜索音乐                                          │
-│  ├─ 📥 下载管理                                          │
-│  └─ 🎯 歌曲管理                                          │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  [搜索框: 请输入歌曲名、歌手、专辑]          [搜索]      │
-│                                                         │
-│  搜索结果:                                              │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │ 歌名          歌手        专辑        [播放][下载] │   │
-│  │ 周杰伦-晴天    周杰伦      叶惠美      [▶] [⬇]    │   │
-│  │ 周杰伦-七里香  周杰伦      七里香      [▶] [⬇]    │   │
-│  └─────────────────────────────────────────────────┘   │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-│ ♫ 正在播放: 晴天 - 周杰伦      [◀] [▶] [▶▶]    🔊 80%  │
-└─────────────────────────────────────────────────────────┘
-```
+- 🎵 **多音源支持**: 兼容 lx-music-desktop 自定义源，支持网易云、QQ音乐、酷我、酷狗等平台
+- 🌐 **Web 访问**: 浏览器即可使用，支持多设备访问
+- 📥 **服务器端下载**: 支持断点续传、队列管理、多任务并行
+- 🔄 **实时推送**: WebSocket 实时推送下载进度
+- 🛡️ **防盗链代理**: 自动处理音乐平台防盗链
+- 💾 **数据持久化**: SQLite 数据库存储
+- 🎨 **现代化 UI**: Vue 3 + Element Plus 构建
+- 🎯 **歌曲管理**: 内置歌曲管理器，支持元数据编辑
+- 🔍 **智能搜索**: 多平台聚合搜索
 
 ## 🚀 快速开始
 
-### 方式一: Docker 部署 (推荐)
+### 方式一: Docker Compose（推荐）
 
+```yaml
 version: '3.8'
 
 services:
@@ -66,254 +42,81 @@ services:
 volumes:
   melodyhub-data:
   melodyhub-files:
+```
 
+启动服务：
+```bash
+docker-compose up -d
+# 访问 http://localhost:3000
+```
 
-### 方式二: 本地开发
-
-#### 后端
+### 方式二: 直接运行容器
 
 ```bash
-cd server
-
-# 安装依赖
-npm install
-
-# 启动服务
-npm start
-
-# 或开发模式
-npm run dev
+docker run -d \
+  --name melodyhub \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  -v melodyhub-data:/app/data \
+  -v melodyhub-files:/app/music \
+  -e NODE_ENV=production \
+  -e PORT=3000 \
+  -e DATA_DIR=/app/data \
+  -e MUSIC_DIR=/app/music \
+  -e JWT_SECRET=your-secure-secret-key \
+  -e TZ=Asia/Shanghai \
+  geelonn/melodyhub:latest
 ```
 
-#### 前端
+## 🔧 环境变量
 
-```bash
-cd client
+| 变量名 | 描述 | 默认值 |
+|--------|------|--------|
+| `PORT` | 服务器端口 | `3000` |
+| `DATA_DIR` | 数据存储目录 | `/app/data` |
+| `MUSIC_DIR` | 音乐存储目录 | `/app/music` |
+| `NODE_ENV` | 运行环境 | `production` |
+| `JWT_SECRET` | 安全密钥（必须修改） | `your-secure-secret-key` |
+| `MAX_CONCURRENT_DOWNLOADS` | 最大并发下载数 | `3` |
+| `DOWNLOAD_RETRY_LIMIT` | 下载失败重试次数 | `3` |
+| `HTTP_PROXY` | HTTP 代理（可选） | - |
+| `HTTPS_PROXY` | HTTPS 代理（可选） | - |
+| `TZ` | 时区设置 | `Asia/Shanghai` |
 
-# 安装依赖
-npm install
+## 📁 数据持久化
 
-# 启动开发服务器
-npm run dev
+建议使用 Docker 卷或本地目录挂载来持久化数据：
+- `/app/data`: 存储数据库和配置
+- `/app/music`: 存储下载的音乐文件
 
-# 构建生产版本
-npm run build
-```
+## 🎯 使用指南
 
-## 📦 部署选项
-
-### Docker Compose 配置
-
-项目提供了多种 Docker Compose 配置文件，适用于不同场景：
-
-- **docker-compose.yml**: 生产环境配置
-- **docker-compose.dev.yml**: 开发环境配置（支持热重载）
-- **docker-compose.local.yml**: 本地快速部署配置（使用预构建镜像）
-
-### 环境变量配置
-
-创建 `.env` 文件（或修改 `docker-compose.yml`）：
-
-```env
-# 服务器端口
-PORT=3000
-
-# 数据目录
-DATA_DIR=/app/data
-
-# 音乐存储目录
-MUSIC_DIR=/app/music
-
-# Node 环境
-NODE_ENV=production
-
-# 安全配置 (生产环境必须修改!)
-JWT_SECRET=your-secure-secret-key
-
-# 下载配置
-MAX_CONCURRENT_DOWNLOADS=3
-DOWNLOAD_RETRY_LIMIT=3
-
-# 可选: HTTP 代理
-# HTTP_PROXY=http://proxy.example.com:8080
-# HTTPS_PROXY=http://proxy.example.com:8080
-
-# 时区设置
-TZ=Asia/Shanghai
-```
-
-## 📖 使用指南
-
-### 1. 上传自定义源
-
-访问 `http://localhost:3000` 后，进入"系统设置"页面：
-
-1. 点击"音源管理"
-2. 点击"上传音源"
-3. 选择自定义源 JavaScript 文件
-4. 上传成功后即可使用
-
-### 2. 搜索音乐
-
-1. 在搜索框中输入歌曲名、歌手或专辑
-2. 选择音源（可选）
-3. 点击搜索按钮
-4. 点击"播放"按钮在线播放
-5. 点击"下载"按钮添加到下载队列
-
-### 3. 管理下载
-
-进入"下载管理"页面：
-
-- 查看所有下载任务
-- 实时查看下载进度
-- 暂停/恢复/删除任务
-- 筛选不同状态的任务
-
-### 4. 歌曲管理
-
-进入"歌曲管理"页面：
-
-- 查看本地音乐库
-- 编辑歌曲元数据（标题、艺术家、专辑等）
-- 批量操作（重命名、删除等）
-- 搜索和筛选歌曲
-
-## 📁 目录结构
-
-```
-melodyhub/
-├── server/                    # 后端
-│   ├── src/
-│   │   ├── core/             # 核心模块
-│   │   │   ├── SourceEngine.js     # 源引擎，处理自定义源
-│   │   │   ├── DownloadManager.js   # 下载管理器
-│   │   │   ├── DatabaseManager.js   # 数据库管理
-│   │   │   ├── SongManager.js       # 歌曲管理
-│   │   │   └── TaskService.js       # 任务服务
-│   │   ├── routes/           # API 路由
-│   │   └── app.js           # Express 应用
-│   ├── sources/             # 自定义源
-│   ├── index.js             # 入口文件
-│   └── package.json
-├── client/                   # 前端
-│   ├── src/
-│   │   ├── views/           # 页面
-│   │   │   ├── SearchView.vue       # 搜索页面
-│   │   │   ├── DownloadView.vue     # 下载管理
-│   │   │   ├── SongManagerView.vue  # 歌曲管理
-│   │   │   └── SettingsView.vue     # 系统设置
-│   │   ├── components/      # 组件
-│   │   ├── stores/          # 状态管理
-│   │   ├── api/             # API 封装
-│   │   ├── router/          # 路由
-│   │   ├── assets/          # 静态资源
-│   │   ├── App.vue
-│   │   └── main.js
-│   ├── index.html
-│   ├── vite.config.js
-│   └── package.json
-├── Dockerfile               # Docker 构建文件
-├── docker-compose.yml       # Docker Compose 配置
-└── README.md
-```
-
-## 🔌 API 文档
-
-### 主要端点
-
-| 方法 | 路径 | 描述 |
-|------|------|------|
-| POST | /api/music/search | 搜索音乐 |
-| POST | /api/music/url | 获取播放链接 |
-| POST | /api/music/lyric | 获取歌词 |
-| POST | /api/download/add | 添加下载任务 |
-| GET | /api/download/list | 获取下载列表 |
-| GET | /api/download/status/:id | 获取任务状态 |
-| POST | /api/download/pause/:id | 暂停任务 |
-| POST | /api/download/resume/:id | 恢复任务 |
-| POST | /api/download/delete/:id | 删除任务 |
-| GET | /api/source/list | 获取音源列表 |
-| POST | /api/source/upload | 上传音源 |
-| POST | /api/source/delete/:id | 删除音源 |
-| GET | /api/song-manager/songs | 获取歌曲列表 |
-| POST | /api/song-manager/update | 更新歌曲元数据 |
-| GET | /api/proxy/stream | 代理音频流 |
-| GET | /health | 健康检查 |
-
-## 🛠️ 开发自定义源
-
-### 基本结构
-
-```javascript
-/**
- * @name 音源名称
- * @version 1.0.0
- * @author 作者
- * @description 描述
- */
-
-// 搜索方法 (必需)
-globalThis.search = async ({ keyword, page, limit }) => {
-  return [
-    {
-      id: '歌曲ID',
-      name: '歌曲名',
-      singer: '歌手',
-      album: '专辑',
-      duration: 240
-    }
-  ]
-}
-
-// 获取播放链接 (必需)
-globalThis.getUrl = async ({ songInfo, quality }) => {
-  return 'https://example.com/song.mp3'
-}
-
-// 获取歌词 (可选)
-globalThis.getLyric = async ({ songInfo }) => {
-  return '[00:00.00]歌词内容'
-}
-```
-
-### 可用 API
-
-- `lx.request(url, options, callback)` - HTTP 请求
-- `lx.utils.crypto.md5(data)` - MD5 加密
-- `lx.utils.crypto.aesEncrypt()` - AES 加密
-- `lx.utils.buffer.from()` - Buffer 操作
-- `lx.utils.zlib.gzip()` - Gzip 压缩
+1. **访问 Web 界面**: 打开浏览器访问 `http://localhost:3000`
+2. **上传自定义源**: 进入"系统设置" → "音源管理"上传源文件
+3. **搜索音乐**: 在搜索框输入歌曲名，选择音源后搜索
+4. **下载管理**: 进入"下载管理"查看和管理下载任务
+5. **歌曲管理**: 进入"歌曲管理"编辑元数据和批量操作
 
 ## 🐛 故障排除
 
-### 问题: 容器启动失败
-
-**解决方案**:
+### 容器启动失败
 ```bash
 # 查看日志
-docker-compose logs -f
+docker logs melodyhub
 
-# 重新构建
-docker-compose build --no-cache
-docker-compose up -d
+# 重新构建并启动
+docker-compose up -d --build
 ```
 
-### 问题: 音频无法播放
+### 音频无法播放
+- 检查音源是否返回有效链接
+- 查看浏览器控制台错误
+- 确认服务器网络正常
 
-**解决方案**:
-1. 检查音源是否返回有效链接
-2. 查看浏览器控制台错误
-3. 确认服务器网络正常
-4. 检查防盗链设置
-
-### 问题: 下载失败
-
-**解决方案**:
-1. 检查音乐目录权限
-2. 查看服务器日志
-3. 确认磁盘空间充足
-4. 检查网络连接
+### 下载失败
+- 检查音乐目录权限
+- 查看服务器日志
+- 确认磁盘空间充足
 
 ## 📝 开发计划
 
@@ -330,14 +133,6 @@ docker-compose up -d
 
 欢迎提交 Issue 和 Pull Request！
 
-### 贡献流程
-
-1. Fork 本仓库
-2. 创建你的分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交你的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
-
 ## 📄 许可证
 
 Apache License 2.0
@@ -347,7 +142,3 @@ Apache License 2.0
 本项目基于 [lx-music-desktop](https://github.com/lyswhut/lx-music-desktop) 的核心逻辑开发，感谢原项目的贡献者们。
 
 ---
-
-**项目状态**: ✅ 核心功能完成 | 🚀 可用于生产
-
-**最后更新**: 2026-02-03
