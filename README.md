@@ -43,17 +43,30 @@
 
 ### 方式一: Docker 部署 (推荐)
 
-```bash
-# 1. 克隆项目
-git clone https://github.com/your-repo/melodyhub.git
-cd melodyhub
+version: '3.8'
 
-# 2. 构建并启动
-docker-compose up -d
+services:
+  melodyhub:
+    image: geelonn/melodyhub:latest
+    container_name: melodyhub
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - melodyhub-data:/app/data
+      - melodyhub-files:/app/music
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATA_DIR=/app/data
+      - MUSIC_DIR=/app/music
+      - JWT_SECRET=your-secure-secret-key
+      - TZ=Asia/Shanghai
 
-# 3. 访问
-# 打开浏览器访问 http://localhost:3000
-```
+volumes:
+  melodyhub-data:
+  melodyhub-files:
+
 
 ### 方式二: 本地开发
 
