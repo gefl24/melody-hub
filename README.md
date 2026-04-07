@@ -1,3 +1,6 @@
+# 停止维护，请使用https://hub.docker.com/r/geelonn/lxserver
+
+
 # MelodyHub
 
 基于 lx-music-desktop 核心逻辑的 Web 版本音乐服务，支持多平台音乐搜索、下载和管理，提供 Docker 一键部署方案。
